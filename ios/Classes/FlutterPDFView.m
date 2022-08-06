@@ -46,7 +46,6 @@
               binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger {
     if ([super init]) {
         _viewId = viewId;
-        
         NSString* channelName = [NSString stringWithFormat:@"plugins.endigo.io/pdfview_%lld", viewId];
         _channel = [FlutterMethodChannel methodChannelWithName:channelName binaryMessenger:messenger];
         
@@ -111,6 +110,12 @@
             tapGestureRecognizer.numberOfTapsRequired = 2;
             tapGestureRecognizer.numberOfTouchesRequired = 1;
             [_pdfView addGestureRecognizer:tapGestureRecognizer];
+
+            UITapGestureRecognizer *singleTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onSingleTap:)];
+            singleTapGestureRecognizer.numberOfTapsRequired = 1;
+            singleTapGestureRecognizer.numberOfTouchesRequired = 1;
+            [_pdfView addGestureRecognizer:singleTapGestureRecognizer];
+            [singleTapGestureRecognizer requireGestureRecognizerToFail:tapGestureRecognizer];
 
             NSUInteger pageCount = [document pageCount];
 
@@ -185,6 +190,7 @@
 }
 
 - (void)onUpdateSettings:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_pdfView layoutIfNeeded];
     result(nil);
 }
 
@@ -203,7 +209,11 @@
     }
     [_channel invokeMethod:@"onLinkHandler" arguments:url.absoluteString];
 }
-
+- (void)onSingleTap:(UITapGestureRecognizer *)recognizer {
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        [_channel invokeMethod:@"onSingleTap" arguments:@""];
+    }
+}
 - (void) onDoubleTap: (UITapGestureRecognizer *)recognizer {
     if (recognizer.state == UIGestureRecognizerStateEnded) {
         if ([_pdfView scaleFactor] == _pdfView.scaleFactorForSizeToFit) {
