@@ -190,7 +190,7 @@
 }
 
 - (void)onUpdateSettings:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [_pdfView layoutIfNeeded];
+    _pdfView.autoScales = true;
     result(nil);
 }
 
