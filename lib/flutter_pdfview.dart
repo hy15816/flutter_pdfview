@@ -329,6 +329,10 @@ class PDFViewController {
     return isSet;
   }
 
+  void reloadPDFView() {
+    _channel.invokeMethod('reloadPDFView');
+  }
+
   Future<void> _updateWidget(PDFView widget) async {
     _widget = widget;
     await _updateSettings(_PDFViewSettings.fromWidget(widget));

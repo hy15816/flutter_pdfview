@@ -166,6 +166,10 @@
         [self setPage:call result:result];
     } else if ([[call method] isEqualToString:@"updateSettings"]) {
         [self onUpdateSettings:call result:result];
+    } else if ([[call method] isEqualToString:@"reloadPDFView"]) {
+        _pdfView.autoScales = true;
+        // _pdfView.
+        result(@YES);
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -190,7 +194,7 @@
 }
 
 - (void)onUpdateSettings:(FlutterMethodCall*)call result:(FlutterResult)result {
-    _pdfView.autoScales = true;
+    
     result(nil);
 }
 

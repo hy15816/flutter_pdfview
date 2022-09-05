@@ -121,6 +121,9 @@ public class FlutterPDFView implements PlatformView, MethodCallHandler {
             case "updateSettings":
                 updateSettings(methodCall, result);
                 break;
+            case "reloadPDFView":
+                result.success(null);
+                break;
             default:
                 result.notImplemented();
                 break;

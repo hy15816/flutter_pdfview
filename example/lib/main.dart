@@ -153,6 +153,19 @@ class _MyAppState extends State<MyApp> {
                       );
                     }
                   },
+                ),
+                TextButton(
+                  child: Text("Open ->>>>>> "),
+                  onPressed: () {
+                    if (pathPDF.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PreviewPDFPage(),
+                        ),
+                      );
+                    }
+                  },
                 )
               ],
             );
@@ -181,6 +194,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(' widget.path = ${widget.path}');
     return Scaffold(
       appBar: AppBar(
         title: Text("Document"),
@@ -263,6 +277,122 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
 
           return Container();
         },
+      ),
+    );
+  }
+}
+
+class PreviewPDFPage extends StatefulWidget {
+  PreviewPDFPage({Key? key}) : super(key: key);
+
+  @override
+  State<PreviewPDFPage> createState() => _PreviewPDFPageState();
+}
+
+class _PreviewPDFPageState extends State<PreviewPDFPage> {
+  PDFViewController? _controller;
+  int? pages = 0;
+  int? currentPage = 0;
+  bool isReady = false;
+  String errorMessage = '';
+  final filePath =
+      '/Users/liangqichen/Library/Developer/CoreSimulator/Devices/F8658E2C-6EE7-4BA5-B051-CDBB013969B9/data/Containers/Data/Application/534C38E8-0A8B-4A2E-9316-939A983CA5DB/Documents/demo.pdf';
+  Orientation _orientation = Orientation.portrait;
+  bool _expanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _expanded
+          ? null
+          : AppBar(
+              title: const Text('Title'),
+            ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     _expanded = !_expanded;
+      //     setState(() {});
+      //   },
+      //   child: Icon(_expanded ? Icons.fullscreen_exit : Icons.fullscreen_sharp),
+      // ),
+      body: SafeArea(
+        child: OrientationBuilder(
+          builder: (BuildContext context, Orientation orientation) {
+            if (_orientation != orientation) {
+              _orientation = orientation;
+              debugPrint('_orientation changed');
+              _controller?.reloadPDFView();
+            }
+            return Column(
+              children: [
+                Expanded(
+                    child: Stack(
+                  children: [
+                    PDFView(
+                      filePath: filePath,
+                      enableSwipe: true,
+                      swipeHorizontal: false,
+                      autoSpacing: false,
+                      pageFling: true,
+                      pageSnap: true,
+                      defaultPage: currentPage!,
+                      fitPolicy: FitPolicy.BOTH,
+                      onSingleTap: () {
+                        _expanded = !_expanded;
+                        setState(() {});
+                        debugPrint('onSingleTap');
+                      },
+                      preventLinkNavigation:
+                          false, // if set to true the link is handled in flutter
+                      onRender: (_pages) {
+                        setState(() {
+                          pages = _pages;
+                          isReady = true;
+                        });
+                      },
+                      onError: (error) {
+                        setState(() {
+                          errorMessage = error.toString();
+                        });
+                        print(error.toString());
+                      },
+                      onPageError: (page, error) {
+                        setState(() {
+                          errorMessage = '$page: ${error.toString()}';
+                        });
+                        print('$page: ${error.toString()}');
+                      },
+                      onViewCreated: (PDFViewController pdfViewController) {
+                        _controller = pdfViewController;
+                      },
+                      onLinkHandler: (String? uri) {
+                        print('goto uri: $uri');
+                      },
+                      onPageChanged: (int? page, int? total) {
+                        print('page change: $page/$total');
+                        setState(() {
+                          currentPage = page;
+                        });
+                      },
+                    )
+                  ],
+                )),
+                Offstage(
+                  offstage: _expanded,
+                  child: Container(
+                      color: Colors.red,
+                      height: kToolbarHeight,
+                      width: double.infinity),
+                )
+              ],
+            );
+          },
+        ),
       ),
     );
   }
